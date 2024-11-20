@@ -41,6 +41,8 @@ code {
   flex-direction: column;
   align-items: center;
   font-size: calc(10px + 2vmin);
+  justify-content: center;
+  background-color: lightgray;
 }
 
 .App-link {
@@ -56,9 +58,22 @@ code {
   }
 }
 
+.import__btn__label{
+  background-color: blue;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  border-radius: 8px;
+
+  margin-bottom: 30px;
+}
+
 .import__btn{
-  all: unset;
-align-self: center;}
+  opacity: 0;
+  position: absolute;
+  z-index: -1;
+}
 
 header{
   display: flex;
@@ -69,18 +84,28 @@ header{
   display: flex;
   flex-direction: column;
   gap: 8px;
+  height: 700px;
+  overflow: scroll;
+  width: 100%;
+  padding: 10px 20px;
+  background-color: gray;
 }
 
 .item{
-  background-color: rgba(0, 0, 0, 0.4);
-  padding: 5px 50px;
-  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  padding: 5px 20px;
+  border-radius: 8px;
   cursor: pointer;
-  
-   &:hover{
-    background-color: rgba(0, 0, 0, 0.2);
+  justify-content: space-between;
 
-   }
+  .id{
+    font-size: 20px;
+    font-weight: bold;
+    padding: 5px 12px;
+    border-radius: 50%;
+  }
 }
 
 .container__modal{
@@ -121,12 +146,20 @@ input{
   all: unset;
   width: 100%;
   height: 25px;
-  border-bottom: 1px solid black;
   background-color: lightgray;
   border-radius: 8px;
   font-weight: lighter;
 
   padding: 5px;
+
+  &:active{
+    border-bottom: 1px solid black;
+  }
+
+  &:focus{
+    border-bottom: 1px solid black;
+
+  }
 }
 
 label{
@@ -173,10 +206,51 @@ label{
 
 .baixar{
   position: fixed;
-  bottom: 20px;
-  left: 20px;
+  top: 20px;
+  right: 20px;
   cursor: pointer;
-  background-color: lightgray;
+  background-color: lightblue;
   padding: 10px;
   border-radius: 8px;
+  border: 2px solid black;
+}
+
+.reImport{
+  position: fixed;
+  top: 20px;
+  left: 20px;
+
+  width:100px;
+}
+
+.open__filtros{
+  position: fixed;
+  bottom: 25px;
+  left: 20px;
+  background-color: black;
+  padding: 10px 20px;
+  border-radius: 4px;
+  color: white;
+}
+
+.status{
+  display: flex;
+  gap: 10px;
+  div{
+    border: 2px solid black;
+    border-radius: 4px;
+    padding: 5px;
+    transition: 0.3s;
+  }
+  div.active{
+    transition: 0.3s;
+    background-color: black;
+    color: white;
+  }
+}
+
+select{
+  all: unset;
+  background-color: lightgray;
+  padding: 8px 2px;
 }
