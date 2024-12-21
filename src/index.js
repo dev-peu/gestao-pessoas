@@ -10,6 +10,7 @@ function App() {
   const apps = [
     'KTN Player', 'IBO Player iboplayer.com', 'Ibo Player Pro iboproapp.com', 'Quick Player', 'SS-IPTV', 'ClouDDy', 'QSMART-IPTV', 'Duplecast', 'QUICKPLAYER', 'Vu Player Pro', 'BOBPLAYER', 'IPTVPLAYER.IO', 'LAZERPLAY.IO', 'IBO PRO LCPLAY', 'IBO PLAYER PRO ADÁLIO', 'MAXPLAYER'
   ];
+  const planos = ['Mensal', 'Bimestral', 'Trimestral'];
 
   const [data, setData] = useState([]); // Estado para armazenar os dados da planilha
   const [item, setItem] = useState({});
@@ -31,7 +32,7 @@ function App() {
     servidor: '',
     dataCadastro: '',
     ultimoPagamento: '',
-    valor: 0,
+    plano: '',
     anotacoes: '',
     totalRecebido: 0,
   };
@@ -81,6 +82,25 @@ function App() {
   }, [item.id]); // Roda esse efeito apenas quando o modal for aberto
   
   useEffect(() => {
+    const applyFilters = () => {
+      let filtered = [];
+  
+      if (activeFilter === 'todos') {
+        filtered = data;
+      } else if (activeFilter === 'emDia') {
+        filtered = data.filter((item) => calcularDiasParaVencer(item) >= 0);
+      } else if (activeFilter === 'vencidos') {
+        filtered = data.filter((item) => calcularDiasParaVencer(item) < 0);
+      }
+  
+      // Ordenar por "diasParaVencer" (ordem crescente)
+      filtered.sort((a, b) => {
+        return (a.diasParaVencer || 0) - (b.diasParaVencer || 0); // Garantir que valores nulos ou indefinidos não causem erro
+      });
+  
+      setFilteredData(filtered);
+    };
+
     applyFilters();
   }, [data, activeFilter]);
   
@@ -112,7 +132,7 @@ function App() {
   };
 
   const handleSave = () => {
-    const diasParaVencer = calcularDiasParaVencer(item.ultimoPagamento);
+    const diasParaVencer = calcularDiasParaVencer(item);
   
     // Verificar se o item já existe (com base no ID)
     const existingItemIndex = data.findIndex((d) => d.id === item.id);
@@ -133,10 +153,17 @@ function App() {
     setItem({}); // Limpar o item após salvar
   };
 
-  const calcularDiasParaVencer = (ultimoPagamento) => {
+  const calcularDiasParaVencer = (item) => {
+    const {ultimoPagamento, plano} = item
     if (!ultimoPagamento) return null;
     const dataUltimoPagamento = new Date(ultimoPagamento);
-    const diasParaVencimento = 30;
+    let diasParaVencimento = 30;
+    if (plano === 'Bimestral') {
+      diasParaVencimento = 60;
+    }
+    if (plano === 'Trimestral') {
+      diasParaVencimento = 90;
+    }
     const dataVencimento = new Date(dataUltimoPagamento);
     dataVencimento.setDate(dataVencimento.getDate() + diasParaVencimento);
 
@@ -153,25 +180,6 @@ function App() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Dados');
     const hoje = new Date();
     XLSX.writeFile(workbook, `Gestao_iptv_${hoje.toLocaleDateString('brazil')}.xlsx`);
-  };
-
-  const applyFilters = () => {
-    let filtered = [];
-
-    if (activeFilter === 'todos') {
-      filtered = data;
-    } else if (activeFilter === 'emDia') {
-      filtered = data.filter((item) => calcularDiasParaVencer(item.ultimoPagamento) >= 0);
-    } else if (activeFilter === 'vencidos') {
-      filtered = data.filter((item) => calcularDiasParaVencer(item.ultimoPagamento) < 0);
-    }
-
-    // Ordenar por "diasParaVencer" (ordem crescente)
-    filtered.sort((a, b) => {
-      return (a.diasParaVencer || 0) - (b.diasParaVencer || 0); // Garantir que valores nulos ou indefinidos não causem erro
-    });
-
-    setFilteredData(filtered);
   };
   
   const handleDelete = () => {
@@ -289,18 +297,18 @@ function App() {
 
                 <label>
                 Servidor:
-                <select
-                  value={servers.indexOf(item.servidor)} // Obtemos o índice do servidor atual no array
-                  onChange={(e) => setItem({ ...item, servidor: servers[e.target.value] })} // Atualizamos o item com o servidor correspondente ao índice selecionado
-                >
-                  <option value="">Selecione</option>
-                  {servers.map((server, index) => (
-                    <option key={index} value={index}>
-                      {server}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <select
+                    value={servers.indexOf(item.servidor)} // Obtemos o índice do servidor atual no array
+                    onChange={(e) => setItem({ ...item, servidor: servers[e.target.value] })} // Atualizamos o item com o servidor correspondente ao índice selecionado
+                  >
+                    <option value="">Selecione</option>
+                    {servers.map((server, index) => (
+                      <option key={index} value={index}>
+                        {server}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
               
               <label>
@@ -380,19 +388,25 @@ function App() {
                 </label>
 
                 <label>
-                  Valor:
-                  <input
-                    type="number"
-                    value={item.valor} // Certifique-se de adicionar a propriedade no seu objeto `item`
-                    onChange={(e) => setItem({ ...item, valor: e.target.value })}
-                  />
+                  Plano:
+                  <select
+                    value={planos.indexOf(item.plano)} // Obtemos o índice do Plano atual no array
+                    onChange={(e) => setItem({ ...item, plano: planos[e.target.value] })} // Atualizamos o item com o servidor correspondente ao índice selecionado
+                  >
+                    <option value="">Selecione</option>
+                    {planos.map((plano, index) => (
+                      <option key={index} value={index}>
+                        {plano}
+                      </option>
+                    ))}
+                  </select>
                 </label>
               </div>
 
-              <div className="resultado" style={{backgroundColor: calcularDiasParaVencer(item.ultimoPagamento) < 0 ? 'red' : 'green'}}>
+              <div className="resultado" style={{backgroundColor: calcularDiasParaVencer(item) < 0 ? 'red' : 'green'}}>
                 {item.ultimoPagamento && (
                   <span> 
-                    {calcularDiasParaVencer(item.ultimoPagamento) < 0 ? `(Vencido há ${String(calcularDiasParaVencer(item.ultimoPagamento)).replace('-', '')} dias)` : `Dias até o vencimento: ${calcularDiasParaVencer(item.ultimoPagamento)}`}
+                    {calcularDiasParaVencer(item) < 0 ? `(Vencido há ${String(calcularDiasParaVencer(item)).replace('-', '')} dias)` : `Dias até o vencimento: ${calcularDiasParaVencer(item)}`}
                   </span>
                 )}
               </div>
